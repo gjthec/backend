@@ -83,7 +83,26 @@ app.get("/api/clients", async (req, res) => {
         res.status(500).send("Erro ao buscar clientes.");
     }
 });
+// Nova rota para obter cliente por CPF/CNPJ e retornar apenas `razaosocial` e `situacao`
+app.get("/api/clients/by-cpfcnpj/:cpfcnpj", async (req, res) => {
+    const { cpfcnpj } = req.params;
 
+    try {
+        const result = await pool.query(
+            "SELECT razaosocial, situacao FROM clients WHERE cpfcnpj = $1",
+            [cpfcnpj]
+        );
+
+        if (result.rows.length === 0) {
+            res.status(404).send("Cliente não encontrado.");
+        } else {
+            res.json(result.rows[0]);
+        }
+    } catch (error) {
+        console.error("Erro ao buscar cliente por CPF/CNPJ:", error.message);
+        res.status(500).send("Erro ao buscar cliente por CPF/CNPJ.");
+    }
+});
 // Rota para obter um cliente específico pelo ID
 app.get("/api/clients/:id", async (req, res) => {
     const { id } = req.params;
